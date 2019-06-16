@@ -7,7 +7,6 @@
 ![License](https://img.shields.io/pypi/l/keras-transformer-xl.svg)
 
 ![](https://img.shields.io/badge/keras-tensorflow-blue.svg)
-![](https://img.shields.io/badge/keras-theano-blue.svg)
 ![](https://img.shields.io/badge/keras-tf.keras-blue.svg)
 ![](https://img.shields.io/badge/keras-tf.keras/eager-blue.svg)
 ![](https://img.shields.io/badge/keras-tf.keras/2.0_beta-blue.svg)
