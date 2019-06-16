@@ -1,8 +1,8 @@
 from unittest import TestCase
 import numpy as np
-from keras_transformer_xl.backend import keras, EAGER_MODE
+from keras_transformer_xl.backend import keras
 from keras_transformer_xl.backend import backend as K
-from keras_transformer_xl import RelativePartialMultiHeadSelfAttention
+from keras_transformer_xl import RelativeBias, RelativePartialMultiHeadSelfAttention
 
 
 class TestRelMultiHead(TestCase):
@@ -66,31 +66,36 @@ class TestRelMultiHead(TestCase):
             [-0.7641095447924122, -0.1450007600387442, 1.5279135983387981, -0.5072818940455809],
         ])
 
+        bias_context = np.array([0.35799413043562894, -0.15005629449852656, 0.6263946579941496, 0.3409731658714878])
+        bias_relative = np.array([-0.3082491589087075, -0.3751562822576601, 0.26067868083146517, 1.1346146882950412])
+
         input_layers = [
             keras.layers.Input(shape=(3, 4), name='Inputs'),
             keras.layers.Input(shape=(3, 4), name='Relatives'),
             keras.layers.Input(shape=(None, 4), name='Memories'),
         ]
+        bias_layer = RelativeBias(
+            4,
+            name='Bias')
         att_layer = RelativePartialMultiHeadSelfAttention(
             4, 2,
             use_bias=False,
-            weights=[kernel_q, kernel_kv, kernel_o, kernel_r],
             name='Attention')
-        outputs = [att_layer(input_layers)]
-        if EAGER_MODE:
-            att_layer.set_weights([kernel_q, kernel_kv, kernel_o, kernel_r])
+        outputs = [att_layer(input_layers + bias_layer(inputs[0]))]
+        bias_layer.set_weights([bias_context, bias_relative])
+        att_layer.set_weights([kernel_q, kernel_kv, kernel_o, kernel_r])
         model = K.function(input_layers, outputs)
         predicted = model([inputs, relatives, memories])[0]
         expected = np.array([
             [
                 [-0.2668300271034241, 0.8172217011451721, -0.2616312801837921, -4.925265789031982],
-                [-1.9260553121566772, 3.292043685913086, 1.977905035018921, -1.6764724254608154],
-                [0.4846474826335907, 1.0331902503967285, 0.0536954402923584, 4.565516948699951],
+                [-1.2477881908416748, 2.791245222091675, 1.3753974437713623, -2.8643665313720703],
+                [-0.05716386437416077, 1.65394926071167, 0.5282477736473083, 4.514030456542969]
             ],
             [
                 [0.0369393527507782, 1.3558001518249512, 0.7286960482597351, 1.4957764148712158],
-                [0.0915628969669342, 1.2129923105239868, 0.4968325197696686, 1.3960684537887573],
-                [-1.9744672775268555, 3.325007438659668, 1.9871220588684082, 2.1147141456604004],
+                [0.0372699499130249, 1.3527781963348389, 0.7238105535507202, 1.495449185371399],
+                [-1.0944300889968872, 2.2761600017547607, 1.4323406219482422, 1.7387018203735352],
             ],
         ])
         self.assertEqual((2, 3, 4), predicted.shape)

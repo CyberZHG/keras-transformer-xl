@@ -1,3 +1,4 @@
+import tensorflow as tf
 from .backend import keras, activations, initializers, regularizers, constraints, TF_KERAS
 from .backend import backend as K
 
@@ -140,8 +141,9 @@ class RelativePartialMultiHeadSelfAttention(keras.layers.Layer):
     @staticmethod
     def _relative_shift(x):
         batch_size, q_len, k_len = K.shape(x)[0], K.shape(x)[1], K.shape(x)[2]
-        zeros = K.zeros_like(x[:, :, :1])
-        x = K.concatenate([zeros, x], axis=-1)                # (batch * n_head, seq_len, prev_len + seq_len + 1)
+        # zeros = K.zeros_like(x[:, :, :1])
+        # x = K.concatenate([zeros, x], axis=-1)                # (batch * n_head, seq_len, prev_len + seq_len + 1)
+        x = tf.pad(x, [[0, 0], [0, 0], [1, 0]])               # (batch * n_head, seq_len, prev_len + seq_len + 1)
         x = K.reshape(x, (batch_size, k_len + 1, q_len))      # (batch * n_head, prev_len + seq_len + 1, seq_len)
         x = x[:, 1:, :]                                       # (batch * n_head, prev_len + seq_len, seq_len)
         return K.reshape(x, (batch_size, q_len, k_len))       # (batch * n_head, seq_len, prev_len + seq_len)
@@ -150,7 +152,7 @@ class RelativePartialMultiHeadSelfAttention(keras.layers.Layer):
         return input_shape[0]
 
     def call(self, inputs, mask=None):
-        inputs, relatives, memories = inputs
+        inputs, relatives, memories, bias_context, bias_relative = inputs
         full = K.concatenate([memories, inputs], axis=1)      # (batch, prev_len + seq_len, units)
         w_q = K.dot(inputs, self.kernel_q)                    # (batch, seq_len, units)
         w_kv = K.dot(full, self.kernel_kv)                    # (batch, prev_len + seq_len, units * 2)
@@ -167,12 +169,15 @@ class RelativePartialMultiHeadSelfAttention(keras.layers.Layer):
         w_k = w_kv[:, :, :self.units]                         # (batch, prev_len + seq_len, units)
         w_v = w_kv[:, :, self.units:]                         # (batch, prev_len + seq_len, units)
 
-        w_q = self._reshape_to_batches(w_q)                   # (batch * n_head, seq_len, units_head)
+        w_qc = K.bias_add(w_q, bias_context)
+        w_qc = self._reshape_to_batches(w_qc)                 # (batch * n_head, seq_len, units_head)
         w_k = self._reshape_to_batches(w_k)                   # (batch * n_head, prev_len + seq_len, units_head)
-        a_context = K.batch_dot(w_q, w_k, axes=2)             # (batch * n_head, seq_len, prev_len + seq_len)
+        a_context = K.batch_dot(w_qc, w_k, axes=2)            # (batch * n_head, seq_len, prev_len + seq_len)
 
+        w_qr = K.bias_add(w_q, bias_relative)
+        w_qr = self._reshape_to_batches(w_qr)                 # (batch * n_head, seq_len, units_head)
         w_r = self._reshape_to_batches(w_r)                   # (batch * n_head, prev_len + seq_len, units_head)
-        a_relative = K.batch_dot(w_q, w_r, axes=2)            # (batch * n_head, seq_len, prev_len + seq_len)
+        a_relative = K.batch_dot(w_qr, w_r, axes=2)           # (batch * n_head, seq_len, prev_len + seq_len)
         a_relative = self._relative_shift(a_relative)         # (batch * n_head, seq_len, prev_len + seq_len)
 
         att = (a_context + a_relative) / K.sqrt(K.constant(self.units_head, dtype=K.floatx()))
@@ -202,7 +207,6 @@ class RelativePartialMultiHeadSelfAttention(keras.layers.Layer):
             # input_shape = K.int_shape(inputs)
             # if input_shape[1] is not None:
             #     w_o = w_o.reshape((-1,) + input_shape[1:])
-
         return w_o
 
     def get_config(self):
