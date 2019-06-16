@@ -185,7 +185,7 @@ class RelativePartialMultiHeadSelfAttention(keras.layers.Layer):
 
         q_len, k_len = K.shape(w_q)[1], K.shape(w_k)[1]
         indices = K.expand_dims(K.arange(0, k_len), axis=0)
-        upper = K.expand_dims(K.arange(0, q_len), axis=-1)
+        upper = K.expand_dims(K.arange(k_len - q_len, k_len), axis=-1)
         exp *= K.expand_dims(K.cast(indices <= upper, K.floatx()), axis=0)
         if mask is not None:
             exp *= K.cast(K.expand_dims(mask, axis=-2), K.floatx())
