@@ -1,4 +1,4 @@
-# Keras Transformer XL
+<!-- # Keras Transformer XL
 
 [![Travis](https://travis-ci.org/CyberZHG/keras-transformer-xl.svg)](https://travis-ci.org/CyberZHG/keras-transformer-xl)
 [![Coverage](https://coveralls.io/repos/github/CyberZHG/keras-transformer-xl/badge.svg?branch=master)](https://coveralls.io/github/CyberZHG/keras-transformer-xl)
@@ -18,7 +18,9 @@ Unofficial implementation of [Transformer-XL](https://arxiv.org/pdf/1901.02860.p
 ## Install
 
 ```bash
-pip install keras-transformer-xl
+python setup.py install
 ```
 
 ## Usage
+ -->
+Under construction.

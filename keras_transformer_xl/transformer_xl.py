@@ -112,6 +112,7 @@ def build_transformer_xl(units,
         block_output = RelativePartialMultiHeadSelfAttention(
             units=units,
             num_head=num_head,
+            use_bias=False,
             name='Attention-{}'.format(i + 1),
         )([block_output, position_embed, memories[i], context_bias, relative_bias])
         block_output = keras.layers.Add(name='Attention-Res-{}'.format(i + 1))([block_input, block_output])
