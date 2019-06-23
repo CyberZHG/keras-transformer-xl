@@ -46,7 +46,8 @@ def build_transformer_xl(units,
                          fixed_input_len=False,
                          target_len=None,
                          memory_len=None,
-                         clamp_len=None):
+                         clamp_len=None,
+                         share_biases=True):
     """Build transformer-XL model.
 
     :param units: Units inside the transformer.
@@ -65,6 +66,7 @@ def build_transformer_xl(units,
     :param target_len: The length of prediction block.
     :param memory_len: The maximum length of memories.
     :param clamp_len: The maximum value of relative position.
+    :param share_biases: Whether to use the same biases for all layers.
     :return: The built model.
     """
     token_input = keras.layers.Input(shape=(target_len,), name='Input-Token')
@@ -104,11 +106,22 @@ def build_transformer_xl(units,
         token_embed = keras.layers.Dropout(rate=dropout, name='Embed-Token-Dropped')(token_embed)
         position_embed = keras.layers.Dropout(rate=dropout, name='Embed-Position-Dropped')(position_embed)
 
-    context_bias, relative_bias = RelativeBias(units=units, name='Biases')(token_input)
+    if share_biases:
+        context_biases, relative_biases = RelativeBias(units=units, name='Biases')(token_input)
+    else:
+        context_biases, relative_biases = [], []
+        for i in range(num_block):
+            context_bias, relative_bias = RelativeBias(units=units, name='Biases-{}'.format(i + 1))(token_input)
+            context_biases.append(context_bias)
+            relative_biases.append(relative_bias)
 
     outputs = [token_embed]
     for i in range(num_block):
         block_input, block_output = outputs[-1], outputs[-1]
+        if share_biases:
+            context_bias, relative_bias = context_biases, relative_biases
+        else:
+            context_bias, relative_bias = context_biases[i], relative_biases[i]
         block_output = RelativePartialMultiHeadSelfAttention(
             units=units,
             num_head=num_head,
