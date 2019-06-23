@@ -1,0 +1,27 @@
+{
+  "n_layer": 24,
+  "d_model": 1024,
+  "d_embed": 1024,
+  "n_head": 8,
+  "d_head": 128,
+  "d_inner": 3072,
+
+  "tgt_len": 768,
+  "mem_len": 768,
+  "train_bsz": 64,
+  "valid_bsz": 64,
+
+  "test_tgt_len": 128,
+  "test_mem_len": 3800,
+  "test_clamp_len": 1000,
+  "test_bsz": 16,
+
+  "dropout": 0.15,
+  "dropatt": 0.15,
+  "learning_rate": 0.0025,
+  "warmup_steps": 4000,
+  "train_steps": 400000,
+  "iterations": 10000,
+
+  "vocab_size": 27
+}

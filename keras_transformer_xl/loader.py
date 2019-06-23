@@ -3,6 +3,7 @@ import codecs
 import numpy as np
 import tensorflow as tf
 from .backend import keras
+from .backend import backend as K
 from .transformer_xl import build_transformer_xl
 
 
@@ -41,6 +42,7 @@ def build_model_from_config(config_path):
         dropout_attention=config.get('dropatt', 0.0),
         cutoffs=config.get('cutoffs', None),
         div_val=config.get('div_val', 1),
+        force_projection=config.get('proj_same_dim', None),
         bind_embeddings=True,
         bind_projections=config.get('share_proj', True),
         fixed_input_len=config.get('fixed_input_len', False),
@@ -71,10 +73,11 @@ def load_model_weights_from_checkpoint(model,
         embed_layer = model.get_layer(name='Embed-Token')
         weights = []
         for i in range(len(embed_layer.cutoffs) - 1):
-            weights += [
-                loader('transformer/adaptive_embed/cutoff_{}/lookup_table'.format(i)),
-                loader('transformer/adaptive_embed/cutoff_{}/proj_W'.format(i)),
-            ]
+            weights.append(loader('transformer/adaptive_embed/cutoff_{}/lookup_table'.format(i)))
+            if K.int_shape(embed_layer.weights[i * 2 + 1]) != ():
+                weights.append(loader('transformer/adaptive_embed/cutoff_{}/proj_W'.format(i)))
+            else:
+                weights.append(np.zeros(()))
         embed_layer.set_weights(weights)
 
     r_w_bias = loader('transformer/r_w_bias')
@@ -112,6 +115,7 @@ def load_model_weights_from_checkpoint(model,
             loader('transformer/layer_{}/ff/LayerNorm/gamma'.format(i)),
             loader('transformer/layer_{}/ff/LayerNorm/beta'.format(i)),
         ])
+
     if config.get('div_val', 1) == 1:
         model.get_layer(name='Softmax').set_weights([
             loader('transformer/adaptive_softmax/bias'),
@@ -123,7 +127,7 @@ def load_model_weights_from_checkpoint(model,
             loader('transformer/adaptive_softmax/cutoff_0/cluster_b'),
         ]
         for i in range(len(softmax_layer.cutoffs) - 1):
-            if not softmax_layer.bind_projections[i]:
+            if not softmax_layer.bind_projections[i] and softmax_layer.projections[i] is not None:
                 weights.append(loader('transformer/adaptive_softmax/cutoff_{}/proj'.format(i)))
             weights.append(loader('transformer/adaptive_softmax/cutoff_{}/b'.format(i)))
 

@@ -1,0 +1,31 @@
+{
+  "n_layer": 24,
+  "d_model": 1280,
+  "d_embed": 1280,
+  "n_head": 16,
+  "d_head": 80,
+  "d_inner": 8192,
+  "untie_r": true,
+
+  "tgt_len": 32,
+  "mem_len": 32,
+  "train_bsz": 512,
+  "valid_bsz": 512,
+
+  "test_tgt_len": 32,
+  "test_mem_len": 128,
+  "test_bsz": 8,
+
+  "dropout": 0.05,
+  "dropatt": 0.05,
+  "learning_rate": 0.0001,
+  "warmup_steps": 30000,
+  "train_steps": 1200000,
+  "iterations": 10000,
+
+  "vocab_size": 793472,
+  "div_val": 4,
+  "cutoffs": [0, 60000, 100000, 640000, 793472],
+  "proj_same_dim": false,
+  "share_proj": false
+}

@@ -41,6 +41,7 @@ def build_transformer_xl(units,
                          dropout_attention=0.0,
                          cutoffs=None,
                          div_val=1,
+                         force_projection=None,
                          bind_embeddings=True,
                          bind_projections=True,
                          fixed_input_len=False,
@@ -60,6 +61,7 @@ def build_transformer_xl(units,
     :param dropout_attention: Dropout rate inside attention layer.
     :param cutoffs: Cutoffs of adaptive embedding.
     :param div_val: Scale factor of adaptive embedding.
+    :param force_projection: Add projection when the dimensions are equal.
     :param bind_embeddings: Whether to bind embeddings to adaptive softmax.
     :param bind_projections: Whether to bind projections to adaptive softmax.
     :param fixed_input_len: Whether to use fixed length of inputs.
@@ -90,6 +92,7 @@ def build_transformer_xl(units,
         cutoffs=cutoffs,
         div_val=div_val,
         mask_zero=True,
+        force_projection=force_projection,
         return_embeddings=True,
         return_projections=True,
         name='Embed-Token',
@@ -152,6 +155,7 @@ def build_transformer_xl(units,
         embed_dim=embed_dim,
         cutoffs=cutoffs,
         div_val=div_val,
+        force_projection=force_projection,
         bind_embeddings=bind_embeddings,
         bind_projections=bind_projections,
         name='Softmax',
