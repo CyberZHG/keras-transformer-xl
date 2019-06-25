@@ -1,15 +1,16 @@
 from unittest import TestCase
 import numpy as np
 from keras_transformer_xl.backend import keras
+from keras_transformer_xl.backend import backend as K
 from keras_transformer_xl import PositionalEmbedding
 
 
 class TestPositionalEmbedding(TestCase):
 
     def test_sample(self):
-        model = keras.models.Sequential()
-        model.add(PositionalEmbedding(10, input_shape=(4,)))
-        model.compile('sgd', 'mse')
+        input_layer = keras.layers.Input(shape=(4,))
+        embed_layer = PositionalEmbedding(10)(input_layer)
+        model = K.function([input_layer], [embed_layer])
         x = np.array([[0, 1, 2, 3], [4, 5, 6, 7]])
         expected = np.array([[
             [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000],
@@ -17,6 +18,14 @@ class TestPositionalEmbedding(TestCase):
             [0.9093, 0.3117, 0.0502, 0.0080, 0.0013, -0.4161, 0.9502, 0.9987, 1.0000, 1.0000],
             [0.1411, 0.4578, 0.0753, 0.0119, 0.0019, -0.9900, 0.8891, 0.9972, 0.9999, 1.0000],
         ]])
-        predicted = model.predict(x)
+        predicted = model([x])[0]
         self.assertEqual((2, 4, 10), predicted.shape)
         self.assertTrue(np.allclose(expected, predicted[0], rtol=0.0, atol=1e-4), predicted)
+
+    def test_clamp(self):
+        input_layer = keras.layers.Input(shape=(4,))
+        embed_layer = PositionalEmbedding(10, clamp_len=3)(input_layer)
+        model = K.function([input_layer], [embed_layer])
+        predicted = model([np.array([[1, 2, 3, 4]])])[0][0]
+        self.assertFalse(np.allclose(predicted[2], predicted[0]))
+        self.assertTrue(np.allclose(predicted[2], predicted[3]))

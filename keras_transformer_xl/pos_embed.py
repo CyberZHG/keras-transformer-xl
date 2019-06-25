@@ -20,10 +20,11 @@ class PositionalEmbedding(keras.layers.Layer):
         - [Transformer-XL](https://arxiv.org/pdf/1901.02860.pdf)
     """
 
-    def __init__(self, output_dim, **kwargs):
+    def __init__(self, output_dim, clamp_len=0, **kwargs):
         super(PositionalEmbedding, self).__init__(**kwargs)
         self.supports_masking = True
         self.output_dim = output_dim
+        self.clamp_len = clamp_len
 
     def compute_output_shape(self, input_shape):
         return input_shape + (self.output_dim,)
@@ -32,6 +33,8 @@ class PositionalEmbedding(keras.layers.Layer):
         return mask
 
     def call(self, inputs, **kwargs):
+        if self.clamp_len > 0:
+            inputs = K.clip(inputs, min_value=0, max_value=self.clamp_len)
         inputs = K.expand_dims(inputs, axis=-1)
         output_dim = K.cast(self.output_dim, K.floatx())
         ranges = K.expand_dims(K.arange(0.0, self.output_dim, 2.0), axis=0) / output_dim
@@ -42,6 +45,7 @@ class PositionalEmbedding(keras.layers.Layer):
     def get_config(self):
         config = {
             'output_dim': self.output_dim,
+            'clamp_len': self.clamp_len,
         }
         base_config = super(PositionalEmbedding, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
