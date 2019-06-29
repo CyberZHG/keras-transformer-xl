@@ -17,7 +17,7 @@ class TestTransformerXL(TestCase):
             num_block=3,
             num_head=4,
             dropout=0.1,
-            dropout_attention=0.1,
+            attention_dropout=0.1,
             cutoffs=[3],
             div_val=2,
         )

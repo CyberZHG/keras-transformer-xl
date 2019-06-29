@@ -12,6 +12,7 @@ class RelativePartialMultiHeadSelfAttention(keras.layers.Layer):
         units: int >= 0. Dimensions of all tensors.
         num_head: int >= 0. Number of heads. Should divide units.
         use_bias: Boolean. Whether to use bias term.
+        attention_dropout: 0.0 < float < 1.0. Dropout rate for attention weights.
 
     # Input shape
         First 3D tensor with shape: `(batch_size, sequence_length, units)`.
@@ -30,6 +31,7 @@ class RelativePartialMultiHeadSelfAttention(keras.layers.Layer):
                  num_head,
                  activation=None,
                  use_bias=False,
+                 attention_dropout=0.0,
                  kernel_initializer='glorot_normal',
                  bias_initializer='zeros',
                  kernel_regularizer=None,
@@ -45,6 +47,7 @@ class RelativePartialMultiHeadSelfAttention(keras.layers.Layer):
         self.activation = activation
         self.activation = activations.get(activation)
         self.use_bias = use_bias
+        self.attention_dropout = attention_dropout
         self.kernel_initializer = initializers.get(kernel_initializer)
         self.bias_initializer = initializers.get(bias_initializer)
         self.kernel_regularizer = regularizers.get(kernel_regularizer)
@@ -54,6 +57,7 @@ class RelativePartialMultiHeadSelfAttention(keras.layers.Layer):
 
         self.kernel_q, self.kernel_kv, self.kernel_o, self.kernel_r = (None,) * 4
         self.bias_q, self.bias_kv, self.bias_o, self.bias_r = (None,) * 4
+        self.att_drop_layer = None
 
     def compute_mask(self, inputs, mask=None):
         return mask
@@ -122,6 +126,8 @@ class RelativePartialMultiHeadSelfAttention(keras.layers.Layer):
                 constraint=self.bias_constraint,
                 name='bias_r',
             )
+        if 0.0 < self.attention_dropout < 1.0:
+            self.att_drop_layer = keras.layers.Dropout(self.attention_dropout)
         super(RelativePartialMultiHeadSelfAttention, self).build(input_shape)
 
     def _reshape_to_batches(self, x):
@@ -151,7 +157,7 @@ class RelativePartialMultiHeadSelfAttention(keras.layers.Layer):
     def compute_output_shape(self, input_shape):
         return input_shape[0]
 
-    def call(self, inputs, mask=None):
+    def call(self, inputs, mask=None, training=None):
         inputs, relatives, memories, bias_context, bias_relative = inputs
         full = K.concatenate([memories, inputs], axis=1)      # (batch, prev_len + seq_len, units)
         w_q = K.dot(inputs, self.kernel_q)                    # (batch, seq_len, units)
@@ -193,6 +199,8 @@ class RelativePartialMultiHeadSelfAttention(keras.layers.Layer):
             exp *= K.expand_dims(mask, axis=1)
 
         att = exp / K.sum(exp, axis=-1, keepdims=True)
+        if self.att_drop_layer is not None:
+            att = self.att_drop_layer(att, training=training)
         w_v = self._reshape_to_batches(w_v)                   # (batch * n_head, prev_len + seq_len, units_head)
         w_o = K.batch_dot(att, w_v)                           # (batch * n_head, seq_len, units_head)
 
@@ -217,6 +225,7 @@ class RelativePartialMultiHeadSelfAttention(keras.layers.Layer):
             'num_head': self.num_head,
             'activation': activations.serialize(self.activation),
             'use_bias': self.use_bias,
+            'attention_dropout': self.attention_dropout,
             'kernel_initializer': initializers.serialize(self.kernel_initializer),
             'bias_initializer': initializers.serialize(self.bias_initializer),
             'kernel_regularizer': regularizers.serialize(self.kernel_regularizer),

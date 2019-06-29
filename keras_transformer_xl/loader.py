@@ -39,7 +39,7 @@ def build_model_from_config(config_path):
         num_block=config['n_layer'],
         num_head=config['n_head'],
         dropout=config.get('dropout', 0.0),
-        dropout_attention=config.get('dropatt', 0.0),
+        attention_dropout=config.get('dropatt', 0.0),
         cutoffs=config.get('cutoffs', None),
         div_val=config.get('div_val', 1),
         force_projection=config.get('proj_same_dim', None),

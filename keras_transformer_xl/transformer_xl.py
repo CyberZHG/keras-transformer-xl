@@ -6,6 +6,7 @@ from keras_position_wise_feed_forward import FeedForward
 from .pos_embed import PositionalEmbedding
 from .rel_bias import RelativeBias
 from .rel_multi_head import RelativePartialMultiHeadSelfAttention
+from .identity import Identity
 
 
 __all__ = [
@@ -23,6 +24,7 @@ def get_custom_objects():
         'PositionalEmbedding': PositionalEmbedding,
         'RelativeBias': RelativeBias,
         'RelativePartialMultiHeadSelfAttention': RelativePartialMultiHeadSelfAttention,
+        'Identity': Identity,
     }
 
 
@@ -38,7 +40,7 @@ def build_transformer_xl(units,
                          num_block,
                          num_head,
                          dropout=0.0,
-                         dropout_attention=0.0,
+                         attention_dropout=0.0,
                          cutoffs=None,
                          div_val=1,
                          force_projection=None,
@@ -58,7 +60,7 @@ def build_transformer_xl(units,
     :param num_block: Number of basic encoder blocks.
     :param num_head: Number of heads for attention.
     :param dropout: General dropout rate.
-    :param dropout_attention: Dropout rate inside attention layer.
+    :param attention_dropout: Dropout rate inside attention layer.
     :param cutoffs: Cutoffs of adaptive embedding.
     :param div_val: Scale factor of adaptive embedding.
     :param force_projection: Add projection when the dimensions are equal.
@@ -129,6 +131,7 @@ def build_transformer_xl(units,
             units=units,
             num_head=num_head,
             use_bias=False,
+            attention_dropout=attention_dropout,
             name='Attention-{}'.format(i + 1),
         )([block_output, position_embed, memories[i], context_bias, relative_bias])
         block_output = keras.layers.Add(name='Attention-Res-{}'.format(i + 1))([block_input, block_output])
@@ -160,6 +163,9 @@ def build_transformer_xl(units,
         bind_projections=bind_projections,
         name='Softmax',
     )(outputs[-1:] + embedding_weights)
+    outputs = outputs[:-1]
+    for i, output in enumerate(outputs):
+        outputs[i] = Identity(name='Output-Memory-{}'.format(i + 1))(output)
     outputs = [softmax] + outputs
 
     model = keras.models.Model(inputs=inputs, outputs=outputs)
