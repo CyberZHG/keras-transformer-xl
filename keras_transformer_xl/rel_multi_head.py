@@ -144,6 +144,12 @@ class RelativePartialMultiHeadSelfAttention(keras.layers.Layer):
         x = K.permute_dimensions(x, [0, 2, 1, 3])
         return K.reshape(x, (batch_size // self.num_head, seq_len, feature_dim * self.num_head))
 
+    def _reshape_mask(self, mask):
+        seq_len = K.shape(mask)[1]
+        mask = K.expand_dims(mask, axis=1)
+        mask = K.tile(mask, [1, self.num_head, 1])
+        return K.reshape(mask, (-1, seq_len))
+
     @staticmethod
     def _relative_shift(x):
         batch_size, q_len, k_len = K.shape(x)[0], K.shape(x)[1], K.shape(x)[2]
@@ -194,7 +200,7 @@ class RelativePartialMultiHeadSelfAttention(keras.layers.Layer):
         if mask is not None and mask[0] is not None:
             mask = K.cast(mask[0], K.floatx())
             mask = K.concatenate([K.ones_like(memories[:, :, 0]), mask], axis=1)
-            exp *= K.expand_dims(mask, axis=1)
+            exp *= K.expand_dims(self._reshape_mask(mask), axis=1)
 
         att = exp / K.sum(exp, axis=-1, keepdims=True)
         if self.att_drop_layer is not None:
