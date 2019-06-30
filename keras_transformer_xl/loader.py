@@ -1,8 +1,6 @@
 import json
-import codecs
 import numpy as np
 import tensorflow as tf
-from .backend import keras
 from .backend import backend as K
 from .transformer_xl import build_transformer_xl
 
@@ -123,13 +121,14 @@ def load_model_weights_from_checkpoint(model,
     else:
         softmax_layer = model.get_layer(name='Softmax')
         weights = [
-            loader('transformer/adaptive_softmax/cutoff_0/cluster_W'),
+            loader('transformer/adaptive_softmax/cutoff_0/cluster_W').transpose(),
             loader('transformer/adaptive_softmax/cutoff_0/cluster_b'),
         ]
         for i in range(len(softmax_layer.cutoffs) - 1):
             if not softmax_layer.bind_projections[i] and softmax_layer.projections[i] is not None:
                 weights.append(loader('transformer/adaptive_softmax/cutoff_{}/proj'.format(i)))
             weights.append(loader('transformer/adaptive_softmax/cutoff_{}/b'.format(i)))
+        softmax_layer.set_weights(weights)
 
 
 def load_trained_model_from_checkpoint(config_path,

@@ -147,8 +147,6 @@ class RelativePartialMultiHeadSelfAttention(keras.layers.Layer):
     @staticmethod
     def _relative_shift(x):
         batch_size, q_len, k_len = K.shape(x)[0], K.shape(x)[1], K.shape(x)[2]
-        # zeros = K.zeros_like(x[:, :, :1])
-        # x = K.concatenate([zeros, x], axis=-1)                # (batch * n_head, seq_len, prev_len + seq_len + 1)
         x = tf.pad(x, [[0, 0], [0, 0], [1, 0]])               # (batch * n_head, seq_len, prev_len + seq_len + 1)
         x = K.reshape(x, (batch_size, k_len + 1, q_len))      # (batch * n_head, prev_len + seq_len + 1, seq_len)
         x = x[:, 1:, :]                                       # (batch * n_head, prev_len + seq_len, seq_len)

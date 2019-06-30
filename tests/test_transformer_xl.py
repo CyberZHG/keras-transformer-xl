@@ -1,8 +1,6 @@
 import os
 from unittest import TestCase
-import numpy as np
 from keras_transformer_xl.backend import keras
-from keras_transformer_xl.backend import backend as K
 from keras_transformer_xl import build_transformer_xl
 
 

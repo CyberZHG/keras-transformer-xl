@@ -1,8 +1,9 @@
+import numpy as np
 from .backend import keras
-from .backend import backend as K
 from keras_adaptive_softmax import AdaptiveEmbedding, AdaptiveSoftmax
 from keras_layer_normalization import LayerNormalization
 from keras_position_wise_feed_forward import FeedForward
+from .scale import Scale
 from .pos_embed import PositionalEmbedding
 from .rel_bias import RelativeBias
 from .rel_multi_head import RelativePartialMultiHeadSelfAttention
@@ -19,6 +20,7 @@ def get_custom_objects():
     return {
         'AdaptiveEmbedding': AdaptiveEmbedding,
         'AdaptiveSoftmax': AdaptiveSoftmax,
+        'Scale': Scale,
         'LayerNormalization': LayerNormalization,
         'FeedForward': FeedForward,
         'PositionalEmbedding': PositionalEmbedding,
@@ -100,6 +102,7 @@ def build_transformer_xl(units,
         name='Embed-Token',
     )(token_input)
     token_embed, embedding_weights = results[0], results[1:]
+    token_embed = Scale(scale=np.sqrt(units), name='Embed-Token-Scaled')(token_embed)
 
     position_embed = PositionalEmbedding(
         output_dim=units,

@@ -5,7 +5,7 @@ __all__ = ['Identity']
 
 
 class Identity(keras.layers.Layer):
-    """A layer do nothing."""
+    """A layer does nothing."""
 
     def __init__(self, **kwargs):
         super(Identity, self).__init__(**kwargs)
