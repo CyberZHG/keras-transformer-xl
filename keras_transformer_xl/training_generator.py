@@ -2,6 +2,7 @@ from typing import Optional
 import numpy as np
 
 from .backend import keras, callbacks as cbks
+from .sequence import MemorySequence
 
 __all__ = ['fit_generator', 'evaluate_generator', 'predict_generator']
 
@@ -28,7 +29,7 @@ def iter_sequence_infinite(seq):
 
 
 def fit_generator(model,
-                  generator: Sequence,
+                  generator: MemorySequence,
                   epochs=1,
                   verbose=1,
                   callbacks=None,
@@ -123,6 +124,7 @@ def fit_generator(model,
                 batch_logs['size'] = batch_size
                 callbacks.on_batch_begin(batch_index, batch_logs)
 
+                generator.update_memories(model.predict_on_batch(x))
                 outs = model.train_on_batch(x, y,
                                             sample_weight=sample_weight,
                                             class_weight=class_weight)
@@ -167,7 +169,7 @@ def fit_generator(model,
     return model.history
 
 
-def evaluate_generator(model, generator, verbose=0):
+def evaluate_generator(model, generator: MemorySequence, verbose=0):
     """See docstring for `Model.evaluate_generator`."""
     model._make_test_function()
 
@@ -181,7 +183,6 @@ def evaluate_generator(model, generator, verbose=0):
         stateful_metric_indices = []
 
     steps_done = 0
-    wait_time = 0.01
     outs_per_batch = []
     batch_sizes = []
     steps = len(generator)
@@ -211,6 +212,7 @@ def evaluate_generator(model, generator, verbose=0):
                                  '(x, y, sample_weight) '
                                  'or (x, y). Found: ' +
                                  str(generator_output))
+            generator.update_memories(model.predict_on_batch(x))
             outs = model.test_on_batch(x, y, sample_weight=sample_weight)
             outs = to_list(outs)
             outs_per_batch.append(outs)
@@ -248,7 +250,7 @@ def evaluate_generator(model, generator, verbose=0):
     return keras.utils.generic_utils.unpack_singleton(averages)
 
 
-def predict_generator(model, generator, verbose=0):
+def predict_generator(model, generator: MemorySequence, verbose=0):
     """See docstring for `Model.predict_generator`."""
     model._make_predict_function()
 
@@ -284,6 +286,7 @@ def predict_generator(model, generator, verbose=0):
 
             outs = model.predict_on_batch(x)
             outs = to_list(outs)
+            generator.update_memories(outs)
 
             if not all_outs:
                 for out in outs:

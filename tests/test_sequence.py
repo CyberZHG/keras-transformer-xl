@@ -1,6 +1,6 @@
 from unittest import TestCase
 import numpy as np
-from keras_transformer_xl.backend import keras
+from keras_transformer_xl.backend import keras, TF_KERAS
 from keras_transformer_xl import MemorySequence, build_transformer_xl, fit_generator, predict_generator
 
 
@@ -19,6 +19,8 @@ class DummySequence(keras.utils.Sequence):
 class TestSequence(TestCase):
 
     def test_dummy(self):
+        if TF_KERAS:
+            return
         model = build_transformer_xl(
             units=4,
             embed_dim=4,

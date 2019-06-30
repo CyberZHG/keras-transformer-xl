@@ -43,6 +43,45 @@ model.summary()
 
 Suppose the number of transformer blocks is `n`. The last `n` inputs are used for inputs of memorization, and the last `n` outputs represents new data to be memorized.
 
+You can use `MemorySequence` wrapper for training and prediction:
+
+```python
+import keras
+import numpy as np
+from keras_transformer_xl import MemorySequence, build_transformer_xl, fit_generator, predict_generator
+
+
+class DummySequence(keras.utils.Sequence):
+
+    def __init__(self):
+        pass
+
+    def __len__(self):
+        return 10
+
+    def __getitem__(self, index):
+        return np.ones((3, 5 * (index + 1))), np.ones((3, 5 * (index + 1), 3))
+
+
+model = build_transformer_xl(
+    units=4,
+    embed_dim=4,
+    hidden_dim=4,
+    num_token=3,
+    num_block=3,
+    num_head=2,
+)
+seq = MemorySequence(
+    units=4,
+    model=model,
+    sequence=DummySequence(),
+    target_len=10,
+    memory_len=20,
+)
+fit_generator(model, seq, epochs=2, validation_data=seq)
+predict_generator(model, seq, verbose=True)
+```
+
 ### Use `tensorflow.python.keras`
 
 Add `TF_KERAS=1` to environment variables to use `tensorflow.python.keras`.
