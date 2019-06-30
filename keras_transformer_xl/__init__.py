@@ -4,3 +4,4 @@ from .rel_bias import *
 from .scale import *
 from .transformer_xl import *
 from .loader import *
+from .sequence import *
