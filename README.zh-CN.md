@@ -19,7 +19,7 @@
 ## 安装
 
 ```bash
-python setup.py install
+pip install keras-transformer-xl
 ```
 
 ## 使用

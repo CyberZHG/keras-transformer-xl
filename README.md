@@ -18,7 +18,7 @@ Unofficial implementation of [Transformer-XL](https://arxiv.org/pdf/1901.02860.p
 ## Install
 
 ```bash
-python setup.py install
+pip install keras-transformer-xl
 ```
 
 ## Usage

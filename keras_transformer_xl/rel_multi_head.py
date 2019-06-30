@@ -210,11 +210,10 @@ class RelativePartialMultiHeadSelfAttention(keras.layers.Layer):
             w_o = self.activation(w_o)
 
         if TF_KERAS:
-            pass
             # Add shape information to tensor when using `tf.keras`
-            # input_shape = K.int_shape(inputs)
-            # if input_shape[1] is not None:
-            #     w_o = w_o.reshape((-1,) + input_shape[1:])
+            input_shape = K.int_shape(inputs)
+            if input_shape[1] is not None:
+                w_o = K.reshape(w_o, (-1,) + input_shape[1:])
         return w_o
 
     def get_config(self):

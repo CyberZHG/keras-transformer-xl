@@ -49,7 +49,6 @@ def build_transformer_xl(units,
                          force_projection=None,
                          bind_embeddings=True,
                          bind_projections=True,
-                         fixed_input_len=False,
                          target_len=None,
                          memory_len=None,
                          clamp_len=None,
@@ -69,7 +68,6 @@ def build_transformer_xl(units,
     :param force_projection: Add projection when the dimensions are equal.
     :param bind_embeddings: Whether to bind embeddings to adaptive softmax.
     :param bind_projections: Whether to bind projections to adaptive softmax.
-    :param fixed_input_len: Whether to use fixed length of inputs.
     :param target_len: The length of prediction block.
     :param memory_len: The maximum length of memories.
     :param clamp_len: The maximum value of relative position.
@@ -77,16 +75,10 @@ def build_transformer_xl(units,
     :return: The built model.
     """
     token_input = keras.layers.Input(shape=(target_len,), name='Input-Token')
-    if fixed_input_len:
-        position_input = keras.layers.Input(shape=(target_len + memory_len,), name='Input-Position')
-    else:
-        position_input = keras.layers.Input(shape=(None,), name='Input-Position')
+    position_input = keras.layers.Input(shape=(None,), name='Input-Position')
     memories = []
     for i in range(num_block):
-        if fixed_input_len:
-            memory_input = keras.layers.Input(shape=(memory_len, units), name='Input-Memory-{}'.format(i + 1))
-        else:
-            memory_input = keras.layers.Input(shape=(None, units), name='Input-Memory-{}'.format(i + 1))
+        memory_input = keras.layers.Input(shape=(None, units), name='Input-Memory-{}'.format(i + 1))
         memories.append(memory_input)
     inputs = [token_input, position_input] + memories
 

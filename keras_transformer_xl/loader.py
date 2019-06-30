@@ -43,7 +43,6 @@ def build_model_from_config(config_path):
         force_projection=config.get('proj_same_dim', None),
         bind_embeddings=True,
         bind_projections=config.get('share_proj', True),
-        fixed_input_len=config.get('fixed_input_len', False),
         target_len=config['tgt_len'],
         memory_len=config['mem_len'],
         clamp_len=config.get('clamp_len', None),
