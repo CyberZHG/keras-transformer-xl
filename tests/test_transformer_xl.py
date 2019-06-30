@@ -1,7 +1,9 @@
 import os
+import tempfile
 from unittest import TestCase
+import numpy as np
 from keras_transformer_xl.backend import keras
-from keras_transformer_xl import build_transformer_xl
+from keras_transformer_xl import build_transformer_xl, set_custom_objects
 
 
 class TestTransformerXL(TestCase):
@@ -19,6 +21,10 @@ class TestTransformerXL(TestCase):
             cutoffs=[3],
             div_val=2,
         )
+        set_custom_objects()
+        model_path = os.path.join(tempfile.gettempdir(), 'test_transformer_xl_%f.h5' % np.random.random())
+        model.save(model_path)
+        model = keras.models.load_model(model_path)
         model.summary()
         try:
             current_path = os.path.dirname(os.path.abspath(__file__))

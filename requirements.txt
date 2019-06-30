@@ -2,4 +2,4 @@ numpy
 Keras
 keras-transformer>=0.28.0
 keras-position-wise-feed-forward>=0.6.0
-keras-adaptive-softmax>=0.5.0
+keras-adaptive-softmax>=0.6.0

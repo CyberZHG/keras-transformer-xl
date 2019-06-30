@@ -12,6 +12,7 @@ from .identity import Identity
 
 __all__ = [
     'get_custom_objects',
+    'set_custom_objects',
     'build_transformer_xl',
 ]
 
