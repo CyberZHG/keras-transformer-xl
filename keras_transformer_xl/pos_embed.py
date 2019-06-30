@@ -27,12 +27,19 @@ class PositionalEmbedding(keras.layers.Layer):
         self.clamp_len = clamp_len
 
     def compute_output_shape(self, input_shape):
-        return input_shape + (self.output_dim,)
+        return input_shape[1]
 
     def compute_mask(self, inputs, mask=None):
-        return mask
+        if mask is None:
+            return None
+        return mask[0]
 
     def call(self, inputs, **kwargs):
+        length = K.shape(inputs[0])[1] + K.shape(inputs[1])[1]
+        inputs = K.tile(
+            K.expand_dims(K.arange(length - 1, -1, -1, dtype=K.floatx()), axis=0),
+            [K.shape(inputs[0])[0], 1],
+        )
         if self.clamp_len is not None:
             inputs = K.clip(inputs, min_value=0, max_value=self.clamp_len)
         inputs = K.expand_dims(inputs, axis=-1)

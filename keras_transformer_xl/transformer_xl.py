@@ -75,12 +75,11 @@ def build_transformer_xl(units,
     :return: The built model.
     """
     token_input = keras.layers.Input(shape=(target_len,), name='Input-Token')
-    position_input = keras.layers.Input(shape=(None,), name='Input-Position')
     memories = []
     for i in range(num_block):
         memory_input = keras.layers.Input(shape=(None, units), name='Input-Memory-{}'.format(i + 1))
         memories.append(memory_input)
-    inputs = [token_input, position_input] + memories
+    inputs = [token_input] + memories
 
     results = AdaptiveEmbedding(
         input_dim=num_token,
@@ -101,7 +100,7 @@ def build_transformer_xl(units,
         output_dim=units,
         clamp_len=clamp_len,
         name='Embed-Position',
-    )(position_input)
+    )([token_input, memories[0]])
 
     if 0.0 < dropout < 1.0:
         token_embed = keras.layers.Dropout(rate=dropout, name='Embed-Token-Dropped')(token_embed)

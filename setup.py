@@ -11,7 +11,7 @@ with codecs.open('requirements.txt', 'r', 'utf8') as reader:
 
 setup(
     name='keras-transformer-xl',
-    version='0.2.1',
+    version='0.3.1',
     packages=find_packages(),
     url='https://github.com/CyberZHG/keras-transformer-xl',
     license='MIT',
