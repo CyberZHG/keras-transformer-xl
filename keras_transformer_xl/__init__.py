@@ -5,3 +5,4 @@ from .scale import *
 from .transformer_xl import *
 from .loader import *
 from .sequence import *
+from .training_generator import *

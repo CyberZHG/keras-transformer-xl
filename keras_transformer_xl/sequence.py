@@ -76,14 +76,10 @@ class MemorySequence(keras.utils.Sequence):
         for index, value in self.input_memories.values():
             inputs[index] = value
 
-        outputs = [None] * len(self.model.outputs)
         if isinstance(item[1], (list, tuple)):
-            for i, sub_item in enumerate(item[1]):
-                outputs[i] = self._pad_target(sub_item[:, s, ...])
+            outputs = [self._pad_target(sub_item[:, s, ...]) for sub_item in item[1]]
         else:
-            outputs[0] = self._pad_target(item[1][:, s, ...])
-        for index in self.output_memories.values():
-            outputs[index] = np.zeros((batch_size, self.target_len, self.units))
+            outputs = self._pad_target(item[1][:, s, ...])
         return inputs, outputs
 
     @staticmethod

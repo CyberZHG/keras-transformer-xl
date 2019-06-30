@@ -1,7 +1,7 @@
 from unittest import TestCase
 import numpy as np
 from keras_transformer_xl.backend import keras
-from keras_transformer_xl import MemorySequence, build_transformer_xl
+from keras_transformer_xl import MemorySequence, build_transformer_xl, fit_generator, predict_generator
 
 
 class DummySequence(keras.utils.Sequence):
@@ -13,7 +13,7 @@ class DummySequence(keras.utils.Sequence):
         return 10
 
     def __getitem__(self, index):
-        return np.ones((3, 5 * (index + 1))), np.ones((3, 5 * (index + 1), 10))
+        return np.ones((3, 5 * (index + 1))), np.ones((3, 5 * (index + 1), 3))
 
 
 class TestSequence(TestCase):
@@ -46,6 +46,6 @@ class TestSequence(TestCase):
         second_batch = seq[3]
         for i in range(1, 4):
             self.assertEqual((3, 20, 4), second_batch[0][i].shape)
-        for i in range(len(seq)):
-            outputs = model.predict_on_batch(seq[i][0])
-            seq.update_memories(outputs)
+        model.compile(optimizer='adam', loss={'Softmax': 'mse'})
+        fit_generator(model, seq, epochs=2, validation_data=seq)
+        predict_generator(model, seq, verbose=True)

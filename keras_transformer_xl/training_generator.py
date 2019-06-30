@@ -11,7 +11,6 @@ GeneratorEnqueuer = keras.utils.data_utils.GeneratorEnqueuer
 OrderedEnqueuer = keras.utils.data_utils.OrderedEnqueuer
 Progbar = keras.utils.generic_utils.Progbar
 to_list = keras.utils.generic_utils.to_list
-unpack_singleton = keras.utils.generic_utils.unpack_singleton
 
 
 def iter_sequence_infinite(seq):
@@ -246,7 +245,7 @@ def evaluate_generator(model, generator, verbose=0):
                                        weights=batch_sizes))
         else:
             averages.append(np.float64(outs_per_batch[-1][i]))
-    return unpack_singleton(averages)
+    return keras.utils.generic_utils.unpack_singleton(averages)
 
 
 def predict_generator(model, generator, verbose=0):
@@ -254,7 +253,6 @@ def predict_generator(model, generator, verbose=0):
     model._make_predict_function()
 
     steps_done = 0
-    wait_time = 0.01
     all_outs = []
     steps = len(generator)
     enqueuer = None
