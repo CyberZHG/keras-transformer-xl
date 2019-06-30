@@ -1,4 +1,4 @@
-# Keras Transformer XL
+# Keras Transformer-XL
 
 [![Travis](https://travis-ci.org/CyberZHG/keras-transformer-xl.svg)](https://travis-ci.org/CyberZHG/keras-transformer-xl)
 [![Coverage](https://coveralls.io/repos/github/CyberZHG/keras-transformer-xl/badge.svg?branch=master)](https://coveralls.io/github/CyberZHG/keras-transformer-xl)
@@ -23,3 +23,27 @@ pip install keras-transformer-xl
 ```
 
 ## 使用
+
+### 加载预训练权重
+
+在[信息文件夹](./keras_transformer_xl/info)中有一些预训练模型的配置信息，可以根据实际情况进行选择：
+
+```python
+import os
+from keras_transformer_xl import load_trained_model_from_checkpoint
+
+checkpoint_path = 'foo/bar/sota/enwiki8'
+model = load_trained_model_from_checkpoint(
+    config_path=os.path.join(checkpoint_path, 'config.json'),
+    checkpoint_path=os.path.join(checkpoint_path, 'model.ckpt')
+)
+model.summary()
+```
+
+### 关于输入输出
+
+如果transformer块的个数为`n`，则最后`n`个输入用于输入记忆的内容，最后`n`个输出用于输出将要被记忆的内容。
+
+### 使用`tensorflow.python.keras`
+
+在环境变量里加入`TF_KERAS=1`可以启用`tensorflow.python.keras`。加入`TF_EAGER=1`可以启用eager execution。在Keras本身没去支持之前，如果想使用tensorflow 2.0则必须使用`TF_KERAS=1`。
