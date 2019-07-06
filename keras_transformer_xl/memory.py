@@ -27,6 +27,7 @@ class Memory(keras.layers.Layer):
     def __init__(self, batch_size, memory_len, output_dim, **kwargs):
         super(Memory, self).__init__(**kwargs)
         self.supports_masking = True
+        self.stateful = True
 
         self.batch_size = batch_size
         self.memory_len = memory_len
@@ -53,7 +54,7 @@ class Memory(keras.layers.Layer):
 
     def call(self, inputs, **kwargs):
         inputs, memory_length = inputs
-        memory_length = K.cast(memory_length[0], 'int32')
+        memory_length = K.cast(memory_length[0][0], 'int32')
         batch_size = K.cast(K.shape(inputs)[0], 'int32')
         seq_len = K.cast(K.shape(inputs)[1], 'int32')
 
@@ -71,8 +72,7 @@ class Memory(keras.layers.Layer):
             (0, K.cast(K.shape(outputs)[1], 'int32') - seq_len, 0),
             (batch_size, seq_len, self.output_dim),
         )
-        row = K.zeros_like(inputs[0:1, ...])                      # (1, seq_len, output_dim)
-        pad = K.tile(row, (self.batch_size - batch_size, 1, 1))    # (self.batch_size - batch_size, seq_len, output_dim)
+        pad = K.tile(inputs[0:1, ...], (self.batch_size - batch_size, 1, 1))
         padded = K.concatenate([inputs, pad], axis=0)              # (self.batch_size, seq_len, output_dim)
         new_memory = K.concatenate([self.memory, padded], axis=1)  # (self.batch_size, self.memory_len + seq_len, ...)
         new_memory = tf.slice(                                     # (self.batch_size, self.memory_len, output_dim)
@@ -80,8 +80,8 @@ class Memory(keras.layers.Layer):
             (0, seq_len, 0),
             (self.batch_size, self.memory_len, self.output_dim),
         )
-        self.add_update(K.update(self.memory, new_memory), outputs)
-        return outputs
+        self.add_update(K.update(self.memory, new_memory), inputs)
+        return old_memory
 
     def get_config(self):
         config = {

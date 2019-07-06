@@ -1,7 +1,7 @@
 from unittest import TestCase
 import numpy as np
-from keras_transformer_xl.backend import keras, TF_KERAS
-from keras_transformer_xl import MemorySequence, build_transformer_xl, fit_generator, predict_generator
+from keras_transformer_xl.backend import keras
+from keras_transformer_xl import MemorySequence, build_transformer_xl
 
 
 class DummySequence(keras.utils.Sequence):
@@ -19,8 +19,6 @@ class DummySequence(keras.utils.Sequence):
 class TestSequence(TestCase):
 
     def test_dummy(self):
-        if TF_KERAS:
-            return
         model = build_transformer_xl(
             units=4,
             embed_dim=4,
@@ -28,26 +26,31 @@ class TestSequence(TestCase):
             num_token=3,
             num_block=3,
             num_head=2,
+            batch_size=3,
+            memory_len=20,
         )
         seq = MemorySequence(
             units=4,
             model=model,
             sequence=DummySequence(),
             target_len=10,
-            memory_len=20,
         )
-        first_batch = seq[2]
-        outputs = model.predict_on_batch(first_batch[0])
-        seq.update_memories(outputs)
-        second_batch = seq[3]
-        outputs = model.predict_on_batch(second_batch[0])
-        seq.update_memories(outputs)
-        seq.update_memories(outputs)
-        seq.update_memories(outputs)
-        seq.update_memories(outputs)
-        second_batch = seq[3]
-        for i in range(1, 4):
-            self.assertEqual((3, 20, 4), second_batch[0][i].shape)
-        model.compile(optimizer='adam', loss={'Softmax': 'mse'})
-        fit_generator(model, seq, epochs=2, validation_data=seq)
-        predict_generator(model, seq, verbose=True)
+        for i in range(len(seq)):
+            self.assertEqual((3, 10), seq[0][0][0].shape)
+            self.assertEqual((3, 10, 3), seq[0][1].shape)
+
+        self.assertEqual([0, 0, 0], seq[0][0][1].tolist())
+
+        self.assertEqual([0, 0, 0], seq[1][0][1].tolist())
+
+        self.assertEqual([0, 0, 0], seq[2][0][1].tolist())
+        self.assertEqual([10, 10, 10], seq[3][0][1].tolist())
+
+        self.assertEqual([0, 0, 0], seq[4][0][1].tolist())
+        self.assertEqual([10, 10, 10], seq[5][0][1].tolist())
+
+        self.assertEqual([0, 0, 0], seq[6][0][1].tolist())
+        self.assertEqual([10, 10, 10], seq[7][0][1].tolist())
+        self.assertEqual([20, 20, 20], seq[8][0][1].tolist())
+
+        self.assertEqual([0, 0, 0], seq[9][0][1].tolist())

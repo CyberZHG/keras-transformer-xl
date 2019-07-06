@@ -18,10 +18,11 @@ def checkpoint_loader(checkpoint_file):
     return _loader
 
 
-def build_model_from_config(config_path):
+def build_model_from_config(config_path, in_train_phase=False):
     """Build the model from config file.
 
     :param config_path: The path to the JSON configuration file.
+    :param in_train_phase: Whether in training phase.
     :return: model and config
     """
     if isinstance(config_path, dict):
@@ -29,6 +30,16 @@ def build_model_from_config(config_path):
     else:
         with open(config_path, 'r') as reader:
             config = json.loads(reader.read())
+    if in_train_phase:
+        batch_size = max(config['train_bsz'], config.get('valid_bsz', 0))
+        memory_len = config['mem_len']
+        target_len = config['tgt_len']
+        clamp_len = config.get('clamp_len', None)
+    else:
+        batch_size = config.get('test_bsz', max(config['train_bsz'], config.get('valid_bsz', 0)))
+        memory_len = config.get('test_mem_len', config['mem_len'])
+        target_len = config.get('test_tgt_len', config['tgt_len'])
+        clamp_len = config.get('test_clamp_len', None)
     model = build_transformer_xl(
         units=config['d_model'],
         embed_dim=config['d_embed'],
@@ -36,6 +47,8 @@ def build_model_from_config(config_path):
         num_token=config['vocab_size'],
         num_block=config['n_layer'],
         num_head=config['n_head'],
+        batch_size=batch_size,
+        memory_len=memory_len,
         dropout=config.get('dropout', 0.0),
         attention_dropout=config.get('dropatt', 0.0),
         cutoffs=config.get('cutoffs', None),
@@ -43,9 +56,8 @@ def build_model_from_config(config_path):
         force_projection=config.get('proj_same_dim', None),
         bind_embeddings=True,
         bind_projections=config.get('share_proj', True),
-        target_len=config['tgt_len'],
-        memory_len=config['mem_len'],
-        clamp_len=config.get('clamp_len', None),
+        target_len=target_len,
+        clamp_len=clamp_len,
         share_biases=not config.get('untie_r', False),
     )
     return model, config
@@ -131,15 +143,18 @@ def load_model_weights_from_checkpoint(model,
 
 
 def load_trained_model_from_checkpoint(config_path,
-                                       checkpoint_path):
+                                       checkpoint_path,
+                                       in_train_phase=False):
     """Load trained official model from checkpoint.
 
     :param config_path: The path to the JSON configuration file.
     :param checkpoint_path: The path to the checkpoint files, should end with '.ckpt'.
+    :param in_train_phase: Whether in training phase.
     :return: model
     """
     model, config = build_model_from_config(
         config_path,
+        in_train_phase,
     )
     load_model_weights_from_checkpoint(model, config, checkpoint_path)
     return model

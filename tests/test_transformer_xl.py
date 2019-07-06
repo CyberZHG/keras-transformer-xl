@@ -16,6 +16,8 @@ class TestTransformerXL(TestCase):
             num_token=13,
             num_block=3,
             num_head=4,
+            batch_size=3,
+            memory_len=15,
             dropout=0.1,
             attention_dropout=0.1,
             cutoffs=[3],

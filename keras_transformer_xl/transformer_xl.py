@@ -4,6 +4,7 @@ from keras_adaptive_softmax import AdaptiveEmbedding, AdaptiveSoftmax
 from keras_layer_normalization import LayerNormalization
 from keras_position_wise_feed_forward import FeedForward
 from .scale import Scale
+from .memory import Memory
 from .pos_embed import PositionalEmbedding
 from .rel_bias import RelativeBias
 from .rel_multi_head import RelativePartialMultiHeadSelfAttention
@@ -22,6 +23,7 @@ def get_custom_objects():
         'AdaptiveEmbedding': AdaptiveEmbedding,
         'AdaptiveSoftmax': AdaptiveSoftmax,
         'Scale': Scale,
+        'Memory': Memory,
         'LayerNormalization': LayerNormalization,
         'FeedForward': FeedForward,
         'PositionalEmbedding': PositionalEmbedding,
@@ -42,6 +44,8 @@ def build_transformer_xl(units,
                          num_token,
                          num_block,
                          num_head,
+                         batch_size,
+                         memory_len,
                          dropout=0.0,
                          attention_dropout=0.0,
                          cutoffs=None,
@@ -50,7 +54,6 @@ def build_transformer_xl(units,
                          bind_embeddings=True,
                          bind_projections=True,
                          target_len=None,
-                         memory_len=None,
                          clamp_len=None,
                          share_biases=True):
     """Build transformer-XL model.
@@ -61,6 +64,8 @@ def build_transformer_xl(units,
     :param num_token: Number of distinct input tokens.
     :param num_block: Number of basic encoder blocks.
     :param num_head: Number of heads for attention.
+    :param batch_size: Maximum batch size.
+    :param memory_len: The maximum length of memories.
     :param dropout: General dropout rate.
     :param attention_dropout: Dropout rate inside attention layer.
     :param cutoffs: Cutoffs of adaptive embedding.
@@ -69,17 +74,13 @@ def build_transformer_xl(units,
     :param bind_embeddings: Whether to bind embeddings to adaptive softmax.
     :param bind_projections: Whether to bind projections to adaptive softmax.
     :param target_len: The length of prediction block.
-    :param memory_len: The maximum length of memories.
     :param clamp_len: The maximum value of relative position.
     :param share_biases: Whether to use the same biases for all layers.
     :return: The built model.
     """
     token_input = keras.layers.Input(shape=(target_len,), name='Input-Token')
-    memories = []
-    for i in range(num_block):
-        memory_input = keras.layers.Input(shape=(None, units), name='Input-Memory-{}'.format(i + 1))
-        memories.append(memory_input)
-    inputs = [token_input] + memories
+    memory_length_input = keras.layers.Input(shape=(1,), name='Input-Memory-Length')
+    inputs = [token_input, memory_length_input]
 
     results = AdaptiveEmbedding(
         input_dim=num_token,
@@ -95,12 +96,18 @@ def build_transformer_xl(units,
     )(token_input)
     token_embed, embedding_weights = results[0], results[1:]
     token_embed = Scale(scale=np.sqrt(units), name='Embed-Token-Scaled')(token_embed)
+    last_memory = Memory(
+        batch_size=batch_size,
+        memory_len=memory_len,
+        output_dim=units,
+        name='Memory-0',
+    )([token_embed, memory_length_input])
 
     position_embed = PositionalEmbedding(
         output_dim=units,
         clamp_len=clamp_len,
         name='Embed-Position',
-    )([token_input, memories[0]])
+    )([token_input, last_memory])
 
     if 0.0 < dropout < 1.0:
         token_embed = keras.layers.Dropout(rate=dropout, name='Embed-Token-Dropped')(token_embed)
@@ -128,7 +135,7 @@ def build_transformer_xl(units,
             use_bias=False,
             attention_dropout=attention_dropout,
             name='Attention-{}'.format(i + 1),
-        )([block_output, position_embed, memories[i], context_bias, relative_bias])
+        )([block_output, position_embed, last_memory, context_bias, relative_bias])
         block_output = keras.layers.Add(name='Attention-Res-{}'.format(i + 1))([block_input, block_output])
         if 0.0 < dropout < 1.0:
             block_output = keras.layers.Dropout(rate=dropout, name='Attention-Dropped-{}'.format(i + 1))(block_output)
@@ -145,6 +152,14 @@ def build_transformer_xl(units,
             block_output = keras.layers.Dropout(rate=dropout, name='FeedForward-Dropped-{}'.format(i + 1))(block_output)
         block_output = LayerNormalization(name='FeedForward-Norm-{}'.format(i + 1))(block_output)
 
+        if i < num_block - 1:
+            last_memory = Memory(
+                batch_size=batch_size,
+                memory_len=memory_len,
+                output_dim=units,
+                name='Memory-{}'.format(i + 1),
+            )([block_output, memory_length_input])
+
         outputs.append(block_output)
 
     softmax = AdaptiveSoftmax(
@@ -158,10 +173,6 @@ def build_transformer_xl(units,
         bind_projections=bind_projections,
         name='Softmax',
     )(outputs[-1:] + embedding_weights)
-    outputs = outputs[:-1]
-    for i, output in enumerate(outputs):
-        outputs[i] = Identity(name='Output-Memory-{}'.format(i + 1))(output)
-    outputs = [softmax] + outputs
 
-    model = keras.models.Model(inputs=inputs, outputs=outputs)
+    model = keras.models.Model(inputs=inputs, outputs=softmax)
     return model
