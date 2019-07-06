@@ -1,3 +1,4 @@
+import tensorflow as tf
 from .backend import keras
 from .backend import backend as K
 
@@ -56,25 +57,30 @@ class Memory(keras.layers.Layer):
         batch_size = K.cast(K.shape(inputs)[0], 'int32')
         seq_len = K.cast(K.shape(inputs)[1], 'int32')
 
-        # Build new memory
-        row = K.zeros_like(inputs[0:1, ...])                       # (1, seq_len, output_dim)
-        pad = K.tile(row, (self.batch_size - batch_size, 1, 1))    # (self.batch_size - batch_size, seq_len, output_dim)
-        padded = K.concatenate([inputs, pad], axis=0)              # (self.batch_size, seq_len, output_dim)
-        new_memory = K.concatenate([self.memory, padded], axis=1)  # (self.batch_size, self.memory_len + seq_len, ...)
-        new_memory = K.slice(                                      # (self.batch_size, self.memory_len, output_dim)
-            new_memory,
-            (0, seq_len, 0),
-            (self.batch_size, self.memory_len, self.output_dim),
-        )
-        self.add_update(K.update(self.memory, new_memory))
-
         # Build output
-        old_memory = K.slice(                                      # (batch_size, memory_length, output_dim)
+        old_memory = tf.slice(                                     # (batch_size, memory_length, output_dim)
             self.memory,
             (0, K.maximum(0, self.memory_len - memory_length), 0),
             (batch_size, K.minimum(self.memory_len, memory_length), self.output_dim),
         )
         outputs = K.concatenate([old_memory, inputs], axis=1)      # (batch_size, memory_length + seq_len, output_dim)
+
+        # Build new memory
+        inputs = tf.slice(                                         # (batch_size, seq_len, output_dim)
+            outputs,
+            (0, K.cast(K.shape(outputs)[1], 'int32') - seq_len, 0),
+            (batch_size, seq_len, self.output_dim),
+        )
+        row = K.zeros_like(inputs[0:1, ...])                      # (1, seq_len, output_dim)
+        pad = K.tile(row, (self.batch_size - batch_size, 1, 1))    # (self.batch_size - batch_size, seq_len, output_dim)
+        padded = K.concatenate([inputs, pad], axis=0)              # (self.batch_size, seq_len, output_dim)
+        new_memory = K.concatenate([self.memory, padded], axis=1)  # (self.batch_size, self.memory_len + seq_len, ...)
+        new_memory = tf.slice(                                     # (self.batch_size, self.memory_len, output_dim)
+            new_memory,
+            (0, seq_len, 0),
+            (self.batch_size, self.memory_len, self.output_dim),
+        )
+        self.add_update(K.update(self.memory, new_memory), outputs)
         return outputs
 
     def get_config(self):
