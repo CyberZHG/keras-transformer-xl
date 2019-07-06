@@ -7,18 +7,15 @@ __all__ = ['MemorySequence']
 class MemorySequence(keras.utils.Sequence):
 
     def __init__(self,
-                 units: int,
                  model: keras.models.Model,
                  sequence: keras.utils.Sequence,
                  target_len: int):
         """Initialize the sequence.
 
-        :param units: Dimension inside the model.
         :param model: The built model.
         :param sequence: The original sequence.
         :param target_len: The length of prediction.
         """
-        self.units = units
         self.model = model
         self.sequence = sequence
         self.target_len = target_len

@@ -8,7 +8,6 @@ from .memory import Memory
 from .pos_embed import PositionalEmbedding
 from .rel_bias import RelativeBias
 from .rel_multi_head import RelativePartialMultiHeadSelfAttention
-from .identity import Identity
 
 
 __all__ = [
@@ -29,7 +28,6 @@ def get_custom_objects():
         'PositionalEmbedding': PositionalEmbedding,
         'RelativeBias': RelativeBias,
         'RelativePartialMultiHeadSelfAttention': RelativePartialMultiHeadSelfAttention,
-        'Identity': Identity,
     }
 
 

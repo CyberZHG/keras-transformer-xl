@@ -71,9 +71,9 @@ model = build_transformer_xl(
     num_head=2,
     batch_size=3,
     memory_len=20,
+    target_len=10,
 )
 seq = MemorySequence(
-    units=4,
     model=model,
     sequence=DummySequence(),
     target_len=10,

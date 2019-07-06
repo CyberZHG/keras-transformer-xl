@@ -16,6 +16,18 @@ class DummySequence(keras.utils.Sequence):
         return np.ones((3, 5 * (index + 1))), np.ones((3, 5 * (index + 1), 3))
 
 
+class DummyMulti(keras.utils.Sequence):
+
+    def __init__(self):
+        pass
+
+    def __len__(self):
+        return 10
+
+    def __getitem__(self, index):
+        return [np.ones((3, 5 * (index + 1)))] * 3, [np.ones((3, 5 * (index + 1), 3))] * 2
+
+
 class TestSequence(TestCase):
 
     def test_dummy(self):
@@ -31,7 +43,6 @@ class TestSequence(TestCase):
             target_len=10,
         )
         seq = MemorySequence(
-            units=4,
             model=model,
             sequence=DummySequence(),
             target_len=10,
@@ -57,3 +68,24 @@ class TestSequence(TestCase):
         self.assertEqual([0, 0, 0], seq[9][0][1].tolist())
 
         model.predict_generator(seq)
+
+    def test_dummy_multi(self):
+        inputs = [
+            keras.layers.Input(shape=(10,)),
+            keras.layers.Input(shape=(10,)),
+            keras.layers.Input(shape=(1,), name='Input-Memory-Length'),
+            keras.layers.Input(shape=(10,)),
+        ]
+        outputs = [
+            keras.layers.Add()([inputs[0], inputs[1]]),
+            keras.layers.Add()([inputs[2], inputs[3]]),
+        ]
+        model = keras.models.Model(inputs, outputs)
+        seq = MemorySequence(
+            model=model,
+            sequence=DummyMulti(),
+            target_len=10,
+        )
+        for i in range(len(seq)):
+            self.assertEqual(4, len(seq[0][0]))
+            self.assertEqual(2, len(seq[0][1]))
