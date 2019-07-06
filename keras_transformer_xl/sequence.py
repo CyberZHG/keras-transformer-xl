@@ -36,7 +36,7 @@ class MemorySequence(keras.utils.Sequence):
         self.memory_length_index = None
         for i, input_layer in enumerate(model.inputs):
             name = input_layer.name.split(':')[0].split('/')[0]
-            if name == 'Input-Memory-Length':
+            if name.startswith('Input-Memory-Length'):
                 self.memory_length_index = i
                 break
 

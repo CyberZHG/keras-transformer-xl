@@ -6,7 +6,7 @@
 ![Downloads](https://img.shields.io/pypi/dm/keras-transformer-xl.svg)
 ![License](https://img.shields.io/pypi/l/keras-transformer-xl.svg)
 
-<!--![](https://img.shields.io/badge/keras-tensorflow-blue.svg)-->
+![](https://img.shields.io/badge/keras-tensorflow-blue.svg)
 ![](https://img.shields.io/badge/keras-tf.keras-blue.svg)
 ![](https://img.shields.io/badge/keras-tf.keras/eager-blue.svg)
 ![](https://img.shields.io/badge/keras-tf.keras/2.0_beta-blue.svg)
@@ -23,10 +23,6 @@ pip install keras-transformer-xl
 ```
 
 ## 使用
-
-### 注意
-
-在环境变量里加入`TF_KERAS=1`启用`tensorflow.python.keras`。
 
 ### 加载预训练权重
 
@@ -85,3 +81,7 @@ seq = MemorySequence(
 
 model.predict(model, seq, verbose=True)
 ```
+
+### 使用`tf.keras`
+
+在环境变量里加入`TF_KERAS=1`启用`tensorflow.python.keras`。

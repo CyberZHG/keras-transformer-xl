@@ -6,7 +6,7 @@
 ![Downloads](https://img.shields.io/pypi/dm/keras-transformer-xl.svg)
 ![License](https://img.shields.io/pypi/l/keras-transformer-xl.svg)
 
-<!--![](https://img.shields.io/badge/keras-tensorflow-blue.svg)-->
+![](https://img.shields.io/badge/keras-tensorflow-blue.svg)
 ![](https://img.shields.io/badge/keras-tf.keras-blue.svg)
 ![](https://img.shields.io/badge/keras-tf.keras/eager-blue.svg)
 ![](https://img.shields.io/badge/keras-tf.keras/2.0_beta-blue.svg)
@@ -22,10 +22,6 @@ pip install keras-transformer-xl
 ```
 
 ## Usage
-
-### Warning
-
-Add `TF_KERAS=1` to environment variables to use `tensorflow.python.keras`.
 
 ### Load Pretrained Weights
 
@@ -86,3 +82,7 @@ seq = MemorySequence(
 
 model.predict(model, seq, verbose=True)
 ```
+
+### Use `tf.keras`
+
+Add `TF_KERAS=1` to environment variables to use `tensorflow.python.keras`.

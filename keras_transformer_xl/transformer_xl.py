@@ -46,6 +46,7 @@ def build_transformer_xl(units,
                          num_head,
                          batch_size,
                          memory_len,
+                         target_len,
                          dropout=0.0,
                          attention_dropout=0.0,
                          cutoffs=None,
@@ -53,7 +54,6 @@ def build_transformer_xl(units,
                          force_projection=None,
                          bind_embeddings=True,
                          bind_projections=True,
-                         target_len=None,
                          clamp_len=None,
                          share_biases=True):
     """Build transformer-XL model.
@@ -66,6 +66,7 @@ def build_transformer_xl(units,
     :param num_head: Number of heads for attention.
     :param batch_size: Maximum batch size.
     :param memory_len: The maximum length of memories.
+    :param target_len: The length of prediction block.
     :param dropout: General dropout rate.
     :param attention_dropout: Dropout rate inside attention layer.
     :param cutoffs: Cutoffs of adaptive embedding.
@@ -73,7 +74,6 @@ def build_transformer_xl(units,
     :param force_projection: Add projection when the dimensions are equal.
     :param bind_embeddings: Whether to bind embeddings to adaptive softmax.
     :param bind_projections: Whether to bind projections to adaptive softmax.
-    :param target_len: The length of prediction block.
     :param clamp_len: The maximum value of relative position.
     :param share_biases: Whether to use the same biases for all layers.
     :return: The built model.
@@ -99,6 +99,7 @@ def build_transformer_xl(units,
     last_memory = Memory(
         batch_size=batch_size,
         memory_len=memory_len,
+        target_len=target_len,
         output_dim=units,
         name='Memory-0',
     )([token_embed, memory_length_input])
@@ -156,6 +157,7 @@ def build_transformer_xl(units,
             last_memory = Memory(
                 batch_size=batch_size,
                 memory_len=memory_len,
+                target_len=target_len,
                 output_dim=units,
                 name='Memory-{}'.format(i + 1),
             )([block_output, memory_length_input])

@@ -3,7 +3,7 @@ language: python
 python:
   - 3.6
 env:
-  # - KERAS_BACKEND=tensorflow
+  - KERAS_BACKEND=tensorflow
   - KERAS_BACKEND=tensorflow TF_KERAS=1
   - KERAS_BACKEND=tensorflow TF_KERAS=1 TF_EAGER=1
   - KERAS_BACKEND=tensorflow TF_KERAS=1 TF_2=1

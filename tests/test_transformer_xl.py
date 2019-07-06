@@ -18,6 +18,7 @@ class TestTransformerXL(TestCase):
             num_head=4,
             batch_size=3,
             memory_len=15,
+            target_len=5,
             dropout=0.1,
             attention_dropout=0.1,
             cutoffs=[3],
