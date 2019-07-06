@@ -64,14 +64,8 @@ class Memory(keras.layers.Layer):
             (0, K.maximum(0, self.memory_len - memory_length), 0),
             (batch_size, K.minimum(self.memory_len, memory_length), self.output_dim),
         )
-        outputs = K.concatenate([old_memory, inputs], axis=1)      # (batch_size, memory_length + seq_len, output_dim)
 
         # Build new memory
-        inputs = tf.slice(                                         # (batch_size, seq_len, output_dim)
-            outputs,
-            (0, K.cast(K.shape(outputs)[1], 'int32') - seq_len, 0),
-            (batch_size, seq_len, self.output_dim),
-        )
         pad = K.tile(inputs[0:1, ...], (self.batch_size - batch_size, 1, 1))
         padded = K.concatenate([inputs, pad], axis=0)              # (self.batch_size, seq_len, output_dim)
         new_memory = K.concatenate([self.memory, padded], axis=1)  # (self.batch_size, self.memory_len + seq_len, ...)

@@ -6,7 +6,7 @@
 ![Downloads](https://img.shields.io/pypi/dm/keras-transformer-xl.svg)
 ![License](https://img.shields.io/pypi/l/keras-transformer-xl.svg)
 
-![](https://img.shields.io/badge/keras-tensorflow-blue.svg)
+<!--![](https://img.shields.io/badge/keras-tensorflow-blue.svg)-->
 ![](https://img.shields.io/badge/keras-tf.keras-blue.svg)
 ![](https://img.shields.io/badge/keras-tf.keras/eager-blue.svg)
 ![](https://img.shields.io/badge/keras-tf.keras/2.0_beta-blue.svg)
@@ -22,6 +22,10 @@ pip install keras-transformer-xl
 ```
 
 ## Usage
+
+### Warning
+
+Add `TF_KERAS=1` to environment variables to use `tensorflow.python.keras`.
 
 ### Load Pretrained Weights
 
@@ -41,14 +45,14 @@ model.summary()
 
 ### About IO
 
-Suppose the number of transformer blocks is `n`. The last `n` inputs are used for inputs of memorization, and the last `n` outputs represents new data to be memorized.
+The generated model has two inputs, and the second input is the lengths of memories.
 
 You can use `MemorySequence` wrapper for training and prediction:
 
 ```python
 import keras
 import numpy as np
-from keras_transformer_xl import MemorySequence, build_transformer_xl, fit_generator, predict_generator
+from keras_transformer_xl import MemorySequence, build_transformer_xl
 
 
 class DummySequence(keras.utils.Sequence):
@@ -70,18 +74,15 @@ model = build_transformer_xl(
     num_token=3,
     num_block=3,
     num_head=2,
+    batch_size=3,
+    memory_len=20,
 )
 seq = MemorySequence(
     units=4,
     model=model,
     sequence=DummySequence(),
     target_len=10,
-    memory_len=20,
 )
-fit_generator(model, seq, epochs=2, validation_data=seq)
-predict_generator(model, seq, verbose=True)
+
+model.predict(model, seq, verbose=True)
 ```
-
-### Use `tensorflow.python.keras`
-
-Add `TF_KERAS=1` to environment variables to use `tensorflow.python.keras`.

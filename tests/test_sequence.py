@@ -54,3 +54,5 @@ class TestSequence(TestCase):
         self.assertEqual([20, 20, 20], seq[8][0][1].tolist())
 
         self.assertEqual([0, 0, 0], seq[9][0][1].tolist())
+
+        model.predict_generator(seq)
