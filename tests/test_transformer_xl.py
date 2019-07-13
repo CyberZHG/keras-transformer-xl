@@ -35,3 +35,22 @@ class TestTransformerXL(TestCase):
             keras.utils.vis_utils.plot_model(model, visual_path)
         except Exception as e:
             pass
+
+    def test_fit_batch_changes(self):
+        model = build_transformer_xl(
+            units=4,
+            embed_dim=4,
+            hidden_dim=4,
+            num_token=2,
+            num_block=1,
+            num_head=1,
+            batch_size=2,
+            memory_len=0,
+            target_len=5,
+        )
+        model.compile('adam', 'mse')
+        model.summary()
+        model.train_on_batch([np.ones((2, 5)), np.zeros((2, 1))], np.zeros((2, 5, 2)))
+        model.train_on_batch([np.ones((1, 5)), np.zeros((1, 1))], np.zeros((1, 5, 2)))
+        model.train_on_batch([np.ones((2, 5)), np.zeros((2, 1))], np.zeros((2, 5, 2)))
+        model.train_on_batch([np.ones((1, 5)), np.zeros((1, 1))], np.zeros((1, 5, 2)))

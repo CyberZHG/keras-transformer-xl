@@ -12,9 +12,10 @@ class PositionalEmbedding(keras.layers.Layer):
 
     # Input shape
         2D tensor with shape: `(batch_size, sequence_length)`.
+        3D tensor with shape: `(batch_size, memory_length, output_dim)`.
 
     # Output shape
-        3D tensor with shape: `(batch_size, sequence_length, output_dim)`.
+        3D tensor with shape: `(batch_size, sequence_length + memory_length, output_dim)`.
 
     # References
         - [Transformer-XL](https://arxiv.org/pdf/1901.02860.pdf)
@@ -27,7 +28,11 @@ class PositionalEmbedding(keras.layers.Layer):
         self.clamp_len = clamp_len
 
     def compute_output_shape(self, input_shape):
-        return input_shape[1]
+        input_shape, memory_shape = input_shape
+        mem_len = None
+        if input_shape[1] is not None and memory_shape[1] is not None:
+            mem_len = input_shape[1] + memory_shape[1]
+        return input_shape[0],  mem_len, memory_shape[2]
 
     def compute_mask(self, inputs, mask=None):
         if mask is None:
