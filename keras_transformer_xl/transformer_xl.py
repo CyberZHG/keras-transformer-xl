@@ -112,22 +112,15 @@ def build_transformer_xl(units,
         token_embed = keras.layers.Dropout(rate=dropout, name='Embed-Token-Dropped')(token_embed)
         position_embed = keras.layers.Dropout(rate=dropout, name='Embed-Position-Dropped')(position_embed)
 
+    context_bias, relative_bias = None, None
     if share_biases:
-        context_biases, relative_biases = RelativeBias(units=units, name='Biases')(token_input)
-    else:
-        context_biases, relative_biases = [], []
-        for i in range(num_block):
-            context_bias, relative_bias = RelativeBias(units=units, name='Biases-{}'.format(i + 1))(token_input)
-            context_biases.append(context_bias)
-            relative_biases.append(relative_bias)
+        context_bias, relative_bias = RelativeBias(units=units, name='Biases')(last_memory)
 
     outputs = [token_embed]
     for i in range(num_block):
         block_input, block_output = outputs[-1], outputs[-1]
-        if share_biases:
-            context_bias, relative_bias = context_biases, relative_biases
-        else:
-            context_bias, relative_bias = context_biases[i], relative_biases[i]
+        if not share_biases:
+            context_bias, relative_bias = RelativeBias(units=units, name='Biases-{}'.format(i + 1))(last_memory)
         block_output = RelativePartialMultiHeadSelfAttention(
             units=units,
             num_head=num_head,

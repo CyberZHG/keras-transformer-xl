@@ -39,7 +39,7 @@ class RelativeBias(keras.layers.Layer):
         return [(self.units,)] * 2
 
     def compute_mask(self, inputs, mask=None):
-        return [mask, mask]
+        return [None, None]
 
     def build(self, input_shape):
         self.bias_context = self.add_weight(

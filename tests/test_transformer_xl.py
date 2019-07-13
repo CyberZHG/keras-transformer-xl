@@ -10,12 +10,12 @@ class TestTransformerXL(TestCase):
 
     def test_build(self):
         model = build_transformer_xl(
-            units=16,
+            units=6,
             embed_dim=16,
-            hidden_dim=64,
+            hidden_dim=12,
             num_token=13,
             num_block=3,
-            num_head=4,
+            num_head=2,
             batch_size=3,
             memory_len=15,
             target_len=5,
