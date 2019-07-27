@@ -47,7 +47,7 @@ class Memory(keras.layers.Layer):
         super(Memory, self).build(input_shape)
 
     def compute_output_shape(self, input_shape):
-        return self.batch_size, None, self.output_dim
+        return input_shape[0][0], None, self.output_dim
 
     def compute_mask(self, inputs, mask=None):
         if mask is None:
