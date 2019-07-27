@@ -60,7 +60,9 @@ class RelativePartialMultiHeadSelfAttention(keras.layers.Layer):
         self.att_drop_layer = None
 
     def compute_mask(self, inputs, mask=None):
-        return mask
+        if mask is not None:
+            return mask[0]
+        return None
 
     def build(self, input_shape):
         self.kernel_q = self.add_weight(
