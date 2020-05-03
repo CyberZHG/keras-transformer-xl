@@ -62,8 +62,8 @@ class RelativeBias(keras.layers.Layer):
 
     def call(self, inputs, **kwargs):
         return [
-            K.identity(self.bias_context),
-            K.identity(self.bias_relative),
+            self.bias_context + 0.0,
+            self.bias_relative + 0.0,
         ]
 
     def get_config(self):

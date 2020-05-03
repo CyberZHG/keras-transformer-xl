@@ -38,7 +38,7 @@ class TestLoader(TestCase):
         self._set_memory(model, memory_1, 1)
         length_input = np.ones((memory_0.shape[0], 1)) * memory_0.shape[1]
 
-        outputs = model.predict([tokens, length_input])
+        outputs = model.predict([tokens, length_input], batch_size=1)
         self.assertTrue(np.allclose(new_memory_0[:, 10:], self._get_memory(model, 0, 10), atol=1e-6))
         self.assertTrue(np.allclose(new_memory_1[:, 10:], self._get_memory(model, 1, 10), atol=1e-6))
         self.assertTrue(np.allclose(softmax, outputs))
@@ -60,7 +60,7 @@ class TestLoader(TestCase):
         self._set_memory(model, memory_0, 0)
         self._set_memory(model, memory_1, 1)
         length_input = np.ones((memory_0.shape[0], 1)) * memory_0.shape[1]
-        outputs = model.predict([tokens, length_input])
+        outputs = model.predict([tokens, length_input], batch_size=1)
         self.assertTrue(np.allclose(new_memory_0[0, 10:], self._get_memory(model, 0, 10), atol=1e-6))
         self.assertTrue(np.allclose(new_memory_1[0, 10:], self._get_memory(model, 1, 10), atol=1e-6))
         self.assertTrue(np.allclose(softmax, outputs[0]))
@@ -88,7 +88,7 @@ class TestLoader(TestCase):
         self._set_memory(model, memory_1, 1)
         self._set_memory(model, memory_2, 2)
         length_input = np.ones((memory_0.shape[0], 1)) * memory_0.shape[1]
-        outputs = model.predict([tokens, length_input])
+        outputs = model.predict([tokens, length_input], batch_size=1)
         self.assertTrue(np.allclose(new_memory_0[0, 10:], self._get_memory(model, 0, 10), atol=1e-6))
         self.assertTrue(np.allclose(new_memory_1[0, 10:], self._get_memory(model, 1, 10), atol=1e-6))
         self.assertTrue(np.allclose(new_memory_2[0, 10:], self._get_memory(model, 2, 10), atol=1e-6))

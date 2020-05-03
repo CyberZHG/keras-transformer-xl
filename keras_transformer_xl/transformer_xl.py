@@ -128,9 +128,9 @@ def build_transformer_xl(units,
             attention_dropout=attention_dropout,
             name='Attention-{}'.format(i + 1),
         )([block_output, position_embed, last_memory, context_bias, relative_bias])
-        block_output = keras.layers.Add(name='Attention-Res-{}'.format(i + 1))([block_input, block_output])
         if 0.0 < dropout < 1.0:
             block_output = keras.layers.Dropout(rate=dropout, name='Attention-Dropped-{}'.format(i + 1))(block_output)
+        block_output = keras.layers.Add(name='Attention-Res-{}'.format(i + 1))([block_input, block_output])
         block_output = LayerNormalization(name='Attention-Norm-{}'.format(i + 1))(block_output)
 
         block_input = block_output
@@ -139,9 +139,9 @@ def build_transformer_xl(units,
             dropout_rate=dropout,
             name='FeedForward-{}'.format(i + 1),
         )(block_output)
-        block_output = keras.layers.Add(name='FeedForward-Res-{}'.format(i + 1))([block_input, block_output])
         if 0.0 < dropout < 1.0:
             block_output = keras.layers.Dropout(rate=dropout, name='FeedForward-Dropped-{}'.format(i + 1))(block_output)
+        block_output = keras.layers.Add(name='FeedForward-Res-{}'.format(i + 1))([block_input, block_output])
         block_output = LayerNormalization(name='FeedForward-Norm-{}'.format(i + 1))(block_output)
 
         if i < num_block - 1:
@@ -155,6 +155,8 @@ def build_transformer_xl(units,
 
         outputs.append(block_output)
 
+    if 0.0 < dropout < 1.0:
+        outputs[-1] = keras.layers.Dropout(rate=dropout, name='Output-Dropped')(outputs[-1])
     softmax = AdaptiveSoftmax(
         input_dim=units,
         output_dim=num_token,

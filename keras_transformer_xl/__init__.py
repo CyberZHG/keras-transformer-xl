@@ -6,3 +6,5 @@ from .scale import *
 from .transformer_xl import *
 from .loader import *
 from .sequence import *
+
+__version__ = '0.12.0'

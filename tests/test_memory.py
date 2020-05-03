@@ -21,7 +21,7 @@ class TestMemory(TestCase):
                 [[9, 10, 11], [12, 13, 14], [15, 16, 17]],
             ])
             length = np.array([[0], [0]])
-            output = model.predict([data_1, length])
+            output = model.predict([data_1, length], batch_size=2)
             self.assertEqual([[], []], output.tolist())
 
             data_2 = np.array([
@@ -29,7 +29,7 @@ class TestMemory(TestCase):
                 [[27, 28, 29], [30, 31, 32], [33, 34, 35]],
             ])
             length = np.array([[3], [3]])
-            output = model.predict([data_2, length])
+            output = model.predict([data_2, length], batch_size=2)
             self.assertEqual(data_1.tolist(), output.tolist())
 
             data_3 = np.array([
@@ -37,7 +37,7 @@ class TestMemory(TestCase):
                 [[45, 46, 47], [48, 49, 50], [51, 52, 53]],
             ])
             length = np.array([[6], [6]])
-            output = model.predict([data_3, length])
+            output = model.predict([data_3, length], batch_size=2)
             self.assertEqual(np.concatenate([data_1, data_2], axis=1)[:, -5:, :].tolist(), output.tolist())
 
             data_4 = np.array([
@@ -45,5 +45,5 @@ class TestMemory(TestCase):
                 [[63, 64, 65], [66, 67, 68], [69, 70, 71]],
             ])
             length = np.array([[9], [9]])
-            output = model.predict([data_4, length])
+            output = model.predict([data_4, length], batch_size=2)
             self.assertEqual(np.concatenate([data_1, data_2, data_3], axis=1)[:, -5:, :].tolist(), output.tolist())
