@@ -28,4 +28,4 @@ class TestPositionalEmbedding(TestCase):
         model = K.function([input_layer], [embed_layer])
         predicted = model([np.random.standard_normal((2, 2, 10))])[0][0]
         self.assertTrue(np.allclose(predicted[1], predicted[0]))
-        self.assertFalse(np.allclose(predicted[2], predicted[3]))
+        self.assertFalse(np.allclose(predicted[2], predicted[3]), (predicted[2], predicted[3]))
