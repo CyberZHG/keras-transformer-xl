@@ -12,7 +12,6 @@ from .rel_multi_head import RelativePartialMultiHeadSelfAttention
 
 __all__ = [
     'get_custom_objects',
-    'set_custom_objects',
     'build_transformer_xl',
 ]
 
@@ -29,11 +28,6 @@ def get_custom_objects():
         'RelativeBias': RelativeBias,
         'RelativePartialMultiHeadSelfAttention': RelativePartialMultiHeadSelfAttention,
     }
-
-
-def set_custom_objects():
-    for name, layer in get_custom_objects().items():
-        keras.utils.get_custom_objects()[name] = layer
 
 
 def build_transformer_xl(units,

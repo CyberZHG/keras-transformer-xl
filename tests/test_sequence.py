@@ -4,7 +4,7 @@ from keras_transformer_xl.backend import keras
 from keras_transformer_xl import MemorySequence, build_transformer_xl
 
 
-class DummySequence(keras.utils.Sequence):
+class DummySequence(object):
 
     def __init__(self):
         pass
@@ -16,7 +16,7 @@ class DummySequence(keras.utils.Sequence):
         return np.ones((3, 5 * (index + 1))), np.ones((3, 5 * (index + 1), 3))
 
 
-class DummyMulti(keras.utils.Sequence):
+class DummyMulti(object):
 
     def __init__(self):
         pass
@@ -67,7 +67,7 @@ class TestSequence(TestCase):
 
         self.assertEqual([0, 0, 0], seq[9][0][1].tolist())
 
-        model.predict_generator(seq)
+        model.predict(iter(seq))
 
     def test_dummy_multi(self):
         inputs = [

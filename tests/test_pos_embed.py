@@ -8,7 +8,7 @@ from keras_transformer_xl import PositionalEmbedding
 class TestPositionalEmbedding(TestCase):
 
     def test_sample(self):
-        input_layer = keras.layers.Input(shape=(4, 10))
+        input_layer = keras.layers.Input(shape=(2, 10))
         embed_layer = PositionalEmbedding(10)([input_layer, input_layer])
         model = K.function([input_layer], [embed_layer])
         x = np.random.standard_normal((2, 2, 10))
@@ -23,7 +23,7 @@ class TestPositionalEmbedding(TestCase):
         self.assertTrue(np.allclose(expected, predicted[0], rtol=0.0, atol=1e-4), predicted)
 
     def test_clamp(self):
-        input_layer = keras.layers.Input(shape=(4, 10))
+        input_layer = keras.layers.Input(shape=(2, 10))
         embed_layer = PositionalEmbedding(10, clamp_len=2)([input_layer, input_layer])
         model = K.function([input_layer], [embed_layer])
         predicted = model([np.random.standard_normal((2, 2, 10))])[0][0]

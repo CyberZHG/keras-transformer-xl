@@ -4,11 +4,11 @@ import numpy as np
 __all__ = ['MemorySequence']
 
 
-class MemorySequence(keras.utils.Sequence):
+class MemorySequence(object):
 
     def __init__(self,
                  model: keras.models.Model,
-                 sequence: keras.utils.Sequence,
+                 sequence: 'keras.utils.Sequence',
                  target_len: int):
         """Initialize the sequence.
 
