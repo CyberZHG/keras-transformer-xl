@@ -1,5 +1,3 @@
-numpy
-Keras
-keras-transformer>=0.39.0
-keras-position-wise-feed-forward>=0.7.0
-keras-adaptive-softmax>=0.8.0
+keras-transformer==0.40.0
+keras-position-wise-feed-forward==0.8.0
+keras-adaptive-softmax==0.9.0

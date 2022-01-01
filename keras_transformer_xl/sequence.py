@@ -1,5 +1,5 @@
-from .backend import keras
 import numpy as np
+from tensorflow import keras
 
 __all__ = ['MemorySequence']
 

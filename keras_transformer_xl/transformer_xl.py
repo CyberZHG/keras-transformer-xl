@@ -1,5 +1,6 @@
 import numpy as np
-from .backend import keras
+from tensorflow import keras
+
 from keras_adaptive_softmax import AdaptiveEmbedding, AdaptiveSoftmax
 from keras_layer_normalization import LayerNormalization
 from keras_position_wise_feed_forward import FeedForward

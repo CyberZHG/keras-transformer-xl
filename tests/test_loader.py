@@ -1,8 +1,10 @@
 import os
 import json
 from unittest import TestCase
+
 import numpy as np
-from keras_transformer_xl.backend import backend as K
+from tensorflow.keras import backend as K
+
 from keras_transformer_xl import load_trained_model_from_checkpoint
 
 

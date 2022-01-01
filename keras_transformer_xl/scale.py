@@ -1,4 +1,4 @@
-from .backend import keras
+from tensorflow import keras
 
 __all__ = ['Scale']
 

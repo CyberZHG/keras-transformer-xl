@@ -1,6 +1,8 @@
 from unittest import TestCase
+
 import numpy as np
-from keras_transformer_xl.backend import keras
+from tensorflow import keras
+
 from keras_transformer_xl import Memory
 
 

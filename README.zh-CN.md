@@ -1,15 +1,7 @@
 # Keras Transformer-XL
 
-[![Travis](https://travis-ci.org/CyberZHG/keras-transformer-xl.svg)](https://travis-ci.org/CyberZHG/keras-transformer-xl)
-[![Coverage](https://coveralls.io/repos/github/CyberZHG/keras-transformer-xl/badge.svg?branch=master)](https://coveralls.io/github/CyberZHG/keras-transformer-xl)
 [![Version](https://img.shields.io/pypi/v/keras-transformer-xl.svg)](https://pypi.org/project/keras-transformer-xl/)
-![Downloads](https://img.shields.io/pypi/dm/keras-transformer-xl.svg)
 ![License](https://img.shields.io/pypi/l/keras-transformer-xl.svg)
-
-![](https://img.shields.io/badge/keras-tensorflow-blue.svg)
-![](https://img.shields.io/badge/keras-tf.keras-blue.svg)
-![](https://img.shields.io/badge/keras-tf.keras/eager-blue.svg)
-![](https://img.shields.io/badge/keras-tf.keras/2.0_beta-blue.svg)
 
 \[[中文](https://github.com/CyberZHG/keras-transformer-xl/blob/master/README.zh-CN.md)|[English](https://github.com/CyberZHG/keras-transformer-xl/blob/master/README.md)\]
 
@@ -45,7 +37,7 @@ model.summary()
 模型有两个输入，第一个是词的下标，第二个是已经记忆的长度，第二个输入要求所有数值相同。`MemorySequence`对输入进行的切割并加入了记忆长度的输入：
 
 ```python
-import keras
+from tensorflow import keras
 import numpy as np
 from keras_transformer_xl import MemorySequence, build_transformer_xl
 
@@ -81,7 +73,3 @@ seq = MemorySequence(
 
 model.predict(model, seq, verbose=True)
 ```
-
-### 使用`tf.keras`
-
-在环境变量里加入`TF_KERAS=1`启用`tensorflow.python.keras`。
